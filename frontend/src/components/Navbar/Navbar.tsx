@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import styles from "@/Styles/Navbar/Navbar.module.css";
+import styles from "@/styles/Navbar/Navbar.module.css";
 import NavbarCart from "@/components/Cart/NavbarCart";
 import NavbarSettings from "./NavbarSettings";
 import useMediaQuery from "@/hooks/useMediaQuery";

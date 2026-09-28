@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
-import styles from "@/Styles/Cart/AddToCartBtn.module.css";
-import mapToCartItem from "@/data/mappers/cartItemMapper";
+import styles from "@/styles/Cart/AddToCartBtn.module.css";
 import { Product } from "@/types/product";
 
 interface AddToCartBtnProps {

@@ -1,4 +1,4 @@
-import styles from "../Styles/OrderItem.module.css";
+import styles from "../styles/OrderItem.module.css";
 import { Link } from "react-router-dom";
 import slugify from "../utils/slugify";
 import { CartProduct } from "@/types/product";

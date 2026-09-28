@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import styles from "@/Styles/Cart/NavbarCart.module.css";
+import styles from "@/styles/Cart/NavbarCart.module.css";
 import CartDropdown from "@/components/Cart/CartDropdown";
 import CartCount from "./CartCount";
 import useClickOutside from "@/hooks/useClickOutside";

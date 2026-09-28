@@ -1,4 +1,4 @@
-import styles from "../Styles/Order.module.css";
+import styles from "../styles/Order.module.css";
 import OrderItem from "./OrderItem";
 import orderIcon from "@/assets/images/icons/order-icon.svg";
 import { Order as OrderType } from "@/types/order";

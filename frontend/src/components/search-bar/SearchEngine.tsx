@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import styles from "@/Styles/search-bar/SearchEngine.module.css";
+import styles from "@/styles/search-bar/SearchEngine.module.css";
 import SearchResults from "./SearchResults";
 import useClickOutside from "@/hooks/useClickOutside";
 

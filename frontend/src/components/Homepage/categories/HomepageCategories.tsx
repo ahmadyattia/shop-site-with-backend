@@ -1,4 +1,4 @@
-import styles from "@/Styles/Homepage/categories/HomepageCategories.module.css";
+import styles from "@/styles/Homepage/categories/HomepageCategories.module.css";
 import categories from "@/data/Categories";
 import HomeCategoryCard from "./HomeCategoryCard";
 import { useState } from "react";

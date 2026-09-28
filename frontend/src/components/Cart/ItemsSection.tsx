@@ -1,5 +1,5 @@
 import { useCart } from "../../context/CartContext";
-import styles from "../../Styles/Cart/ItemsSection.module.css";
+import styles from "../../styles/Cart/ItemsSection.module.css";
 import CartItemDisplay from "./CartItemDisplay";
 
 const ItemsSection = () => {

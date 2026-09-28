@@ -1,4 +1,4 @@
-import styles from "@/Styles/Homepage/hero/Hero.module.css";
+import styles from "@/styles/Homepage/hero/Hero.module.css";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {

@@ -1,4 +1,4 @@
-import styles from "@/Styles/Cart/NavbarCartItem.module.css";
+import styles from "@/styles/Cart/NavbarCartItem.module.css";
 import { useCart } from "@/context/CartContext";
 import { CartProduct } from "@/types/product";
 

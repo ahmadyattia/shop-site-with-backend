@@ -1,4 +1,4 @@
-import styles from "@/Styles/Homepage/categories/HomeCategoryCard.module.css";
+import styles from "@/styles/Homepage/categories/HomeCategoryCard.module.css";
 import categoriesImages from "@/data/CategoriesImages";
 import { useNavigate } from "react-router-dom";
 

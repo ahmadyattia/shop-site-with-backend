@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
-import styles from "@/Styles/Navbar/Settings/NavbarSettings.module.css";
+import styles from "@/styles/Navbar/Settings/NavbarSettings.module.css";
 import useClickOutside from "@/hooks/useClickOutside";
 import settingsIcon from "@/assets/images/icons/settings.svg";
 import logoutIcon from "@/assets/images/icons/logout_black.svg";

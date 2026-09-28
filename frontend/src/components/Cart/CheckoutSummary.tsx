@@ -1,6 +1,5 @@
-import { useContext } from "react";
-import { CartContext, useCart } from "@/context/CartContext";
-import styles from "@/Styles/Cart/CheckoutSummary.module.css";
+import { useCart } from "@/context/CartContext";
+import styles from "@/styles/Cart/CheckoutSummary.module.css";
 import { useNavigate } from "react-router-dom";
 import useCartSummary from "@/hooks/useCartSummary";
 

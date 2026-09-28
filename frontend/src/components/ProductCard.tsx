@@ -1,4 +1,4 @@
-import styles from "../Styles/ProductCard.module.css";
+import styles from "../styles/ProductCard.module.css";
 import { useNavigate } from "react-router-dom";
 import AddToCartBtn from "./Cart/AddToCartBtn";
 import { Product } from "@/types/product";

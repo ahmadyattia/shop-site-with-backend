@@ -1,4 +1,4 @@
-import styles from "@/Styles/Cart/CartCount.module.css";
+import styles from "@/styles/Cart/CartCount.module.css";
 import calculateCartCount from "@/utils/calculateCartCount";
 
 const CartCount = () => {

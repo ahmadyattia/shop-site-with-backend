@@ -1,4 +1,4 @@
-import styles from "@/Styles/Cart/CartDropdownActions.module.css";
+import styles from "@/styles/Cart/CartDropdownActions.module.css";
 import { Link } from "react-router-dom";
 
 interface CartDropdownActionsProps {

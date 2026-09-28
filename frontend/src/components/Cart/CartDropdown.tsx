@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import styles from "@/Styles/Cart/CartDropdown.module.css";
+import styles from "@/styles/Cart/CartDropdown.module.css";
 import NavbarCartItem from "./NavbarCartItem";
 import { useCart } from "@/context/CartContext";
 import CartDropdownActions from "./CartDropdownActions";

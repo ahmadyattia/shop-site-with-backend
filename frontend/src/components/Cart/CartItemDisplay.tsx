@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import styles from "@/Styles/Cart/CartItem.module.css";
+import styles from "@/styles/Cart/CartItem.module.css";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import slugify from "@/utils/slugify";
