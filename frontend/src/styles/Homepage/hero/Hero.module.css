@@ -1,7 +1,7 @@
 #hero {
   position: relative;
   height: 100vh;
-  min-height: fit-content;
+  min-height: 40rem;
   max-height: 1000px;
   width: 100%;
   font-family: var(--primary-font);
