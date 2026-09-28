@@ -1,7 +1,6 @@
 #count {
   grid-area: overlap;
   justify-self: end;
-  align-self: start;
   display: flex;
   justify-content: center;
   align-items: center;

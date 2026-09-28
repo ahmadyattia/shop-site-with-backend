@@ -2,6 +2,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
 .settingsIconContainer {
@@ -23,8 +24,8 @@
 
 .settingsDropdown {
   position: absolute;
-  right: 1rem;
-  top: 3rem;
+  right: 0;
+  top: 100%;
   background-color: white;
   border-radius: 1rem;
   width: 14rem;
@@ -86,4 +87,16 @@
 
 .liContainer:hover {
   background-color: rgb(224, 223, 223);
+}
+
+.logoutIcon,
+.deleteAccIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.flexContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
 }

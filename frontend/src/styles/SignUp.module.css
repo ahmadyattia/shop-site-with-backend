@@ -1,8 +1,3 @@
-.signUpHead {
-  color: blue;
-  font-size: 2rem;
-}
-
 .registerForm {
   color: white;
   font-family: "urbanist", sans-serif;
@@ -11,6 +6,11 @@
   justify-content: center;
   align-items: center;
   margin: 2rem;
+}
+
+.signUpHead {
+  color: blue;
+  font-size: 2rem;
 }
 
 .registerForm form div {
@@ -69,4 +69,10 @@
 
 .loginP a {
   text-decoration: none;
+}
+
+.message {
+  /* color handled inline */
+  max-width: 100%;
+  width: 15rem;
 }
