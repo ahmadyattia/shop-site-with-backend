@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import styles from "@/Styles/Cart/AddToCartBtn.module.css";
 import mapToCartItem from "@/data/mappers/cartItemMapper";
-import { MappedProduct } from "@/data/mappers/productsMapper";
+import { Product } from "@/types/product";
 
 interface AddToCartBtnProps {
-  product: MappedProduct;
+  product: Product;
 }
 
 const AddToCartBtn = ({ product }: AddToCartBtnProps) => {
@@ -21,8 +21,6 @@ const AddToCartBtn = ({ product }: AddToCartBtnProps) => {
     setIsInCart(true);
   }
 
-  const cartItem = mapToCartItem(product);
-
   return (
     <div>
       {isInCart ? (
@@ -31,7 +29,7 @@ const AddToCartBtn = ({ product }: AddToCartBtnProps) => {
         <button
           className={styles.addToCartBtn}
           onClick={() => {
-            handleAddToCart(cartItem);
+            handleAddToCart(product, 1);
             handleBtnClick();
           }}
         >

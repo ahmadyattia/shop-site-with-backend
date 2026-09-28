@@ -1,37 +1,61 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import styles from "@/styles/ProductReview.module.css";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import AddToCartBtn from "@/components/Cart/AddToCartBtn";
-import { useProductsData } from "@/context/ProductsContext";
 import backArrowIcon from "@/assets/images/icons/backward_arrow_white_16px.svg";
+import { Product } from "@/types/product";
+import { api } from "@/server/api";
 
 const ProductReview = () => {
-  const { productId } = useParams();
-  const { data, isLoading, error } = useProductsData();
+  const { category } = useParams();
+  const [searchParams] = useSearchParams();
+  const productId = searchParams.get("product_id");
   const navigate = useNavigate();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const product = useMemo(() => {
-    if (!data) return null;
-    return data.find((item) => String(item.id) === String(productId));
-  }, [data, productId]);
+  // const product = useMemo(() => {
+  //   if (!data) return null;
+  //   return data.find((item) => String(item.id) === String(productId));
+  // }, [data, productId]);
 
-  if (!product) return <p style={{ color: "white" }}>Product not found...</p>;
+  useEffect(() => {
+    // fetch product by id
+    async function fetchProduct() {
+      setLoading(true);
+      setError(null);
 
-  const mainImage = product?.images?.[selectedImageIndex] || undefined;
+      try {
+        const response = await api.get(`/products/${category}/${productId}`);
 
-  const discount = product?.discountPercentage || 0;
+        const product = response.data.product;
 
+        setProduct(product);
+      } catch (error) {
+        setError("Error finding product...");
+        console.log("Error finding product:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProduct();
+  }, []);
+
+  if (!product || error) return <p style={{ color: "white" }}>{error}</p>;
+  if (loading) return <p style={{ color: "white" }}>Loading product...</p>;
+
+  const mainImage = product.images?.[selectedImageIndex].url || undefined;
+  const discount = product.discount_percentage || 0;
   const priceAfterDiscount =
     discount > 0
-      ? (product.price - product.price * (discount / 100)).toFixed(2)
-      : null;
-
-  if (isLoading) return <p style={{ color: "white" }}>Loading...</p>;
-
-  if (error)
-    return <p style={{ color: "white" }}>Problem fetching the data...</p>;
+      ? Number.parseFloat(
+          (product.price - product.price * (discount / 100)).toFixed(2),
+        )
+      : 0;
 
   return (
     <>
@@ -46,7 +70,7 @@ const ProductReview = () => {
                   <div className={styles.smallImgDiv} key={index}>
                     <img
                       className={styles.smallImages}
-                      src={image}
+                      src={image.url}
                       key={index}
                       alt={`${product.title} gallery thumbnail ${index + 1}`}
                       onClick={() => setSelectedImageIndex(index)}
@@ -68,25 +92,27 @@ const ProductReview = () => {
 
           <div className={styles.details}>
             <div className={styles.backBtnFlex}>
-              <button
-                type="button"
-                className={styles.backLink}
-                onClick={() => navigate(-1)}
-              >
-                <div className={styles.backBtnContentFlex}>
-                  <img
-                    className={styles.arrowIcon}
-                    src={backArrowIcon}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <span className={styles.backText}>Back</span>
-                </div>
-              </button>
-            </div>
+              <h2 className={styles.title}>{product.title}</h2>
 
-            <h2 className={styles.title}>{product.title}</h2>
-            <p className={styles.category}>{product.category}</p>
+              <div>
+                <button
+                  type="button"
+                  className={styles.backLink}
+                  onClick={() => navigate(-1)}
+                >
+                  <div className={styles.backBtnContentFlex}>
+                    <img
+                      className={styles.arrowIcon}
+                      src={backArrowIcon}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <span className={styles.backText}>Back</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <p className={styles.category}>{product.category.name}</p>
             <p className={styles.description}>{product.description}</p>
             <div className={styles.checkout}>
               <div className={styles.price}>

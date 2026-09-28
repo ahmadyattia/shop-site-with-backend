@@ -1,9 +1,10 @@
 import styles from "@/styles/CategoryProducts.module.css";
-import { useProductsData } from "@/context/ProductsContext";
 import ProductCard from "./ProductCard";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import slugify from "@/utils/slugify";
+import { Product } from "@/types/product";
+import { api } from "@/server/api";
 
 interface CategoryProductsProps {
   category: string;
@@ -11,23 +12,37 @@ interface CategoryProductsProps {
 }
 
 const CategoryProducts = ({ category, countSetter }: CategoryProductsProps) => {
-  const { data, isLoading } = useProductsData();
   const [searchParams] = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const pageNumber = parseInt(searchParams.get("page") || "1");
 
-  // filter products according to the category
-  const filteredProducts = useMemo(() => {
-    if (!data) return [];
+  useEffect(() => {
+    // fetch products according to the category
+    async function fetchProducts() {
+      setLoading(true);
+      setError(null);
 
-    if (category === "all") return data;
+      try {
+        const response = await api.get(`/products/${slugify(category)}`);
 
-    return data.filter(
-      (product) => slugify(product.category) === slugify(category),
-    );
-  }, [data, category]);
+        const products = response.data.products;
 
-  const totalCount = filteredProducts.length;
+        setProducts(products);
+      } catch (error) {
+        setError("Error fetching products...");
+        console.log("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
+  const totalCount = products.length;
 
   useEffect(() => {
     countSetter(totalCount);
@@ -41,14 +56,14 @@ const CategoryProducts = ({ category, countSetter }: CategoryProductsProps) => {
     const startIndex = (pageNumber - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
-    return filteredProducts.slice(startIndex, endIndex);
-  }, [filteredProducts, pageNumber]);
+    return products.slice(startIndex, endIndex);
+  }, [products, pageNumber]);
 
-  if (isLoading)
+  if (loading)
     return <h1 className={styles.statusNotice}>Loading products...</h1>;
 
-  if (!data)
-    return <h1 className={styles.statusNotice}>Error fetching data...</h1>;
+  if (!products || error)
+    return <h1 className={styles.statusNotice}>{error}</h1>;
 
   if (productsOfCurrentPage.length === 0)
     return <h1 className={styles.statusNotice}>Empty products list...</h1>;

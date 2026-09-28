@@ -1,5 +1,4 @@
 const categories = [
-  { name: "All", slug: "all" },
   { name: "Furniture", slug: "furniture" },
   { name: "Electronics", slug: "electronics" },
   { name: "Clothes", slug: "clothes" },

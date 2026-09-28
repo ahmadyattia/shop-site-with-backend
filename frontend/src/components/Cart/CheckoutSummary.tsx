@@ -8,7 +8,7 @@ interface CheckoutSummaryProps {
   page: string;
   shippingMethod?: string;
   triggerSubmit?: () => void;
-  sendTotal?: (total: string) => void;
+  sendTotal?: (total: number) => void;
 }
 
 const CheckoutSummary = ({
@@ -19,7 +19,7 @@ const CheckoutSummary = ({
 }: CheckoutSummaryProps) => {
   const { cart } = useCart();
   const navigate = useNavigate();
-  const { subTotal, discount, shippingPrice, total } = useCartSummary(
+  const { subtotal, discount, shippingPrice, total } = useCartSummary(
     cart,
     shippingMethod as string,
   );
@@ -48,7 +48,7 @@ const CheckoutSummary = ({
         <hr />
         <div id={styles.subtotalBox}>
           <p>Subtotal</p>
-          <p>${subTotal}</p>
+          <p>${subtotal}</p>
         </div>
         <div id={styles.discountBox}>
           <p>Discount</p>

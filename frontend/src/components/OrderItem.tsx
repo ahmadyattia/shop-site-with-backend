@@ -1,19 +1,19 @@
 import styles from "../Styles/OrderItem.module.css";
 import { Link } from "react-router-dom";
 import slugify from "../utils/slugify";
-import { CartItem } from "@/context/CartContext";
+import { CartProduct } from "@/types/product";
 
-const OrderItem = ({ item }: { item: CartItem }) => {
-  const itemLocation = `/shop/${slugify(item.category)}/${item.id}/${slugify(item.title)}`;
+const OrderItem = ({ item }: { item: CartProduct }) => {
+  const itemLocation = `/shop/${slugify(item.category.name)}/${slugify(item.title)}?product_id=${item.id}`;
 
   const discount =
-    item.discountPercentage > 0
-      ? (item.price - item.price * (item.discountPercentage / 100)).toFixed(2)
+    item.discount_percentage && item.discount_percentage > 0
+      ? (item.price - item.price * (item.discount_percentage / 100)).toFixed(2)
       : "";
 
   return (
     <div className={styles.mainBox}>
-      <img className={styles.img} src={item.img} alt={item.title} />
+      <img className={styles.img} src={item.images[0].url} alt={item.title} />
       <div className={styles.title}>{item.title}</div>
       {discount ? (
         <div className={styles.price}>

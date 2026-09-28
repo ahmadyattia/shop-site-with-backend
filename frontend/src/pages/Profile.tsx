@@ -6,7 +6,7 @@ const Profile = () => {
   return (
     <>
       {user ? (
-        <h1 style={{ color: "white" }}>Welcome, {user.displayName}</h1>
+        <h1 style={{ color: "white" }}>Welcome, {user.first_name}</h1>
       ) : (
         <p style={{ color: "white" }}>No user available</p>
       )}

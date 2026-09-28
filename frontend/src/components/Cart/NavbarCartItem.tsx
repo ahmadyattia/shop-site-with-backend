@@ -1,23 +1,22 @@
-import { useContext } from "react";
 import styles from "@/Styles/Cart/NavbarCartItem.module.css";
 import { useCart } from "@/context/CartContext";
-import { CartItem } from "@/context/CartContext";
+import { CartProduct } from "@/types/product";
 
 interface NavbarCartItemProps {
-  item: CartItem;
+  item: CartProduct;
 }
 
 const NavbarCartItem = ({ item }: NavbarCartItemProps) => {
   const { handleAddToCart, handleRemoveFromCart } = useCart();
 
-  const discount = item.discountPercentage;
+  const discount = item.discount_percentage;
   const discountedPrice = discount
     ? (item.price - item.price * (discount / 100)).toFixed(2)
     : "";
 
   return (
     <article className={styles.item}>
-      <img src={item.img} alt="" className={styles.images} />
+      <img src={item.images[0].url} alt="" className={styles.image} />
 
       <div className={styles.details}>
         <p>{item.title}</p>
@@ -31,9 +30,15 @@ const NavbarCartItem = ({ item }: NavbarCartItemProps) => {
             <p className={styles.price}>${item.price}</p>
           )}
           <div id={styles.quantity}>
-            <button onClick={() => handleAddToCart(item)}>+</button>
+            <button onClick={() => handleAddToCart(item, item.quantity + 1)}>
+              +
+            </button>
             <p>{item.quantity}</p>
-            <button onClick={() => handleRemoveFromCart(item)}>-</button>
+            <button
+              onClick={() => handleRemoveFromCart(item, item.quantity - 1)}
+            >
+              -
+            </button>
           </div>
         </div>
       </div>

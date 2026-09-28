@@ -1,4 +1,4 @@
-import { onAuthStateChanged, User } from "firebase/auth";
+import { User } from "@/types/user";
 import {
   createContext,
   ReactNode,
@@ -6,31 +6,132 @@ import {
   useEffect,
   useState,
 } from "react";
-import { auth } from "@/server/firebase";
+import { api } from "@/server/api";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  signup: (
+    fName: string,
+    lName: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
+  // check token on refresh and retrieve user data
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    const verifySession = async () => {
+      setLoading(true);
 
-    return () => unsubscribe();
+      try {
+        const response = await api.get(`/auth/me`);
+
+        setUser(response.data.user);
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifySession();
   }, []);
 
+  async function login(email: string, password: string) {
+    try {
+      const response = await api.post("/auth/login", { email, password });
+      const data = await response.data;
+
+      setUser(data.user);
+    } catch (error: any) {
+      console.error("Error logging in:", error);
+
+      if (error.response?.status === 401) {
+        throw new Error("Wrong email and/or password.");
+      }
+
+      // server error
+      throw new Error("Problem signing you in. Please try again.");
+    }
+  }
+
+  async function logout() {
+    try {
+      document.cookie =
+        "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;";
+
+      setUser(null);
+
+      navigate("/login", { replace: true });
+      console.log("User signed out successfully!");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  }
+
+  async function signup(
+    fName: string,
+    lName: string,
+    email: string,
+    password: string,
+  ) {
+    try {
+      const response = await api.post("/auth/signup", {
+        fName,
+        lName,
+        email,
+        password,
+      });
+    } catch (error: any) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          throw new Error(error.response.data?.error);
+        }
+      }
+      // server error
+      throw new Error("Problem signing you up. Please try again.");
+    }
+  }
+
+  async function deleteAccount() {
+    if (!user) {
+      alert("Log in to delete your account.");
+      return;
+    }
+
+    const confirmation = confirm(
+      "Are you sure you want to delete your account?",
+    );
+
+    if (!confirmation) return;
+
+    try {
+      await api.delete("/auth/delete-account");
+
+      alert("Account deleted successfully!");
+      await logout();
+    } catch (error) {
+      alert("Error deleting your account. Please try again later.");
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider
+      value={{ user, setUser, loading, login, logout, signup, deleteAccount }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -24,7 +24,7 @@ const CartDropdown = ({ isOpen, setIsOpen }: CartDropdownProps) => {
           {cart.map((item) => {
             return (
               <div key={item.id}>
-                <NavbarCartItem item={item} />;
+                <NavbarCartItem item={item} />
                 <hr />
               </div>
             );

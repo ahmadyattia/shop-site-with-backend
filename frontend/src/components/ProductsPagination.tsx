@@ -17,7 +17,7 @@ const ProductsPagination = ({ productsCount }: ProductsPaginationProps) => {
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   // turn the count into an array
-  // example: pagesCount = 4 -> countArr = [1, 2, 3, 4]
+  // example: pagesCount = 4 -> countArray = [1, 2, 3, 4]
   const countArray = useMemo(() => {
     return Array.from({ length: pagesCount }, (_, i) => i + 1);
   }, [pagesCount]);

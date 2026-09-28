@@ -1,31 +1,42 @@
-import { useContext, useMemo } from "react";
+import { useEffect, useState } from "react";
 import styles from "@/styles/Categories.module.css";
 import CategoryCard from "./CategoryCard";
-import { useProductsData } from "../context/ProductsContext";
-import slugify from "@/utils/slugify";
+import { Category } from "@/types/category";
+import { api } from "@/server/api";
 
 const Categories = () => {
-  const { data } = useProductsData();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const categories = useMemo(() => {
-    if (!data) return [];
+  useEffect(() => {
+    async function fetchCategories() {
+      setLoading(true);
+      setError(null);
 
-    // retrieve category names from products
-    // a Set used to remove duplicate categories
-    // then map each product to an object with name and slug properties
-    // added "All" category
+      try {
+        const response = await api.get("/categories");
 
-    const uniqueCategories = [
-      "All",
-      ...new Set(data.map((product) => product.category)),
-    ];
+        const categories = response.data.categories;
+        setCategories(categories);
+      } catch (error) {
+        setError("Error loading categories...");
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    return uniqueCategories.map((category) => {
-      return { name: category, slug: slugify(category) };
-    });
-  }, [data]);
+    fetchCategories();
+  }, []);
 
-  if (!categories.length) return null;
+  if (loading) {
+    return <p style={{ color: "white" }}>Loading categories...</p>;
+  }
+
+  if (error) {
+    return <p style={{ color: "white" }}>{error}</p>;
+  }
 
   return (
     <div>

@@ -4,7 +4,6 @@ import styles from "../styles/ImageSkeleton.module.css";
 interface ImageSkeletonProps {
   src: string;
   alt: string;
-  //   className: string;
 }
 
 const ImageSkeleton = ({ src, alt }: ImageSkeletonProps) => {
@@ -17,7 +16,6 @@ const ImageSkeleton = ({ src, alt }: ImageSkeletonProps) => {
         src={src}
         alt={alt}
         onLoad={() => {
-          console.log("Image loaded");
           setLoaded(true);
         }}
       />

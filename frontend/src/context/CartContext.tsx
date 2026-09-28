@@ -1,151 +1,205 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import { ref, update } from "firebase/database";
-import { db } from "../server/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { useUserData } from "@/context/UserDataContext";
 import { ReactNode } from "react";
+import { CartProduct, Product } from "@/types/product";
+import { api } from "@/server/api";
 
 interface CartContextType {
-  cart: CartItem[];
-  setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
-  handleAddToCart: (targetProduct: CartItem) => void;
+  cart: CartProduct[];
+  setCart: React.Dispatch<React.SetStateAction<CartProduct[]>>;
+  handleAddToCart: (product: Product, quantity: number) => void;
   handleRemoveFromCart: (
-    targetProduct: CartItem,
+    product: Product,
+    quantity: number,
     removeEntirely?: boolean,
   ) => void;
-}
-
-export interface CartItem {
-  category: string;
-  description: string;
-  discountPercentage: number;
-  id: string;
-  img: string;
-  price: number;
-  quantity: number;
-  title: string;
+  deleteCart: () => void;
 }
 
 export const CartContext = createContext<CartContextType | null>(null);
 
 const CartProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const { userData } = useUserData();
-
   // initialize the cart
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartProduct[]>([]);
 
-  useEffect(() => {
-    // SCENARIO A: Authenticated User
-    if (user && userData) {
-      let currentDbCart = userData.cart || [];
+  // useEffect(() => {
+  //   if (!user) {
 
-      let guestCartData: CartItem[] = [];
+  //   }
+  // }, [user]);
 
-      try {
-        const localData = localStorage.getItem("guest_cart");
-        if (localData) guestCartData = JSON.parse(localData) as CartItem[];
-      } catch (err) {
-        console.error("Failed parsing guest cart during merge phase:", err);
-      }
-
-      // Merge only if a guest cart actively exists on login
-      if (guestCartData.length > 0) {
-        const mergedMap = new Map<string, CartItem>();
-
-        [...currentDbCart, ...guestCartData].forEach((item) => {
-          const existingItem = mergedMap.get(item.id);
-          if (existingItem) {
-            mergedMap.set(item.id, {
-              ...existingItem,
-              quantity: existingItem.quantity + item.quantity,
-            });
-          } else {
-            mergedMap.set(item.id, { ...item });
-          }
-        });
-
-        const finalizedMergedCart = Array.from(mergedMap.values());
-
-        // Sync merge to state and db
-
-        setCart(finalizedMergedCart);
-
-        const userRef = ref(db, `users/${user.uid}`);
-        update(userRef, { cart: finalizedMergedCart });
-
-        localStorage.removeItem("guest_cart");
-      } else {
-        // no guest items to combine, just inherit db data
-        setCart(currentDbCart);
-      }
-      return;
-    }
-
-    // SCENARIO B: Unauthenticated Guest
-    if (!user) {
-      try {
-        const savedCart = localStorage.getItem("guest_cart");
-        if (savedCart) setCart(JSON.parse(savedCart) as CartItem[]);
-      } catch (error) {
-        console.error("Corrupted guest item structure:", error);
-      }
-    }
-  }, [user, userData]);
-
-  // Helper: Persist state updates to correct destination
-  const persistCartState = (nextCartState: CartItem[]) => {
-    setCart(nextCartState);
+  const fetchCart = async () => {
     if (user) {
-      update(ref(db, `users/${user.uid}`), { cart: nextCartState });
-    } else {
-      localStorage.setItem("guest_cart", JSON.stringify(nextCartState));
+      try {
+        const response = await api.get("/cart");
+        const data = response.data;
+
+        setCart(data.cart_items);
+      } catch (error) {
+        console.error("Error fetching cart items from the db:", error);
+      }
     }
   };
 
-  // Action: Add to Cart
-  function handleAddToCart(targetProduct: CartItem) {
-    const existingIndex = cart.findIndex(
-      (item) => item.id === targetProduct.id,
-    );
-    let updatedCart: CartItem[];
+  const mergeCartInDb = async () => {
+    try {
+      const guestCartItems = localStorage.getItem("guest_cart");
+      // if (localData) guestCartItems = JSON.parse(localData);
 
-    // if item exists already, increase quantity
-    if (existingIndex > -1) {
-      updatedCart = cart.map((item, idx) =>
-        idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item,
-      );
-    } else {
-      // add a new item
-      updatedCart = [...cart, { ...targetProduct, quantity: 1 }];
+      if (guestCartItems && guestCartItems?.length > 0) {
+        // merge local storage cart into the db cart
+        await api.post("/cart/merge", guestCartItems);
+
+        localStorage.removeItem("guest_cart");
+      }
+    } catch (err) {
+      console.error("Failed merging local cart to db cart:", err);
+    }
+  };
+
+  useEffect(() => {
+    async function updateCartState() {
+      if (user) {
+        await mergeCartInDb();
+        await fetchCart();
+      }
+      if (!user) {
+        // get cart from local storage and update the cart state
+        try {
+          const savedCart = localStorage.getItem("guest_cart");
+          let guestCart: CartProduct[];
+
+          if (savedCart) {
+            guestCart = JSON.parse(savedCart);
+            setCart(guestCart);
+          } else {
+            setCart([]);
+          }
+        } catch (error) {
+          console.error("Error parsing cart from local storage:", error);
+        }
+      }
     }
 
-    // update cart state
-    persistCartState(updatedCart);
+    updateCartState();
+  }, [user]);
+
+  async function handleAddToCart(product: Product, quantity: number) {
+    if (user) {
+      try {
+        await api.post("/cart", { product, quantity });
+
+        // const response = await fetch(
+        //   `${import.meta.env.VITE_BACKEND_URL}/api/cart`,
+        //   {
+        //     method: "POST",
+        //     credentials: "include",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({ product, quantity }),
+        //   },
+        // );
+      } catch (error) {
+        console.error("Error adding cart item to db:", error);
+      }
+
+      await fetchCart();
+    }
+
+    if (!user) {
+      // if item exists already, increase quantity
+      const existingIndex = cart.findIndex((item) => item.id === product.id);
+
+      let updatedCart: CartProduct[];
+
+      if (existingIndex > -1) {
+        updatedCart = cart.map((item, idx) =>
+          idx === existingIndex ? { ...item, quantity } : item,
+        );
+      } else {
+        // add new item
+        updatedCart = [...cart, { ...product, quantity }];
+      }
+
+      localStorage.setItem("guest_cart", JSON.stringify(updatedCart));
+      setCart(updatedCart);
+    }
   }
 
   // Action: Remove from Cart
-  function handleRemoveFromCart(
-    targetProduct: CartItem,
+  //
+
+  async function handleRemoveFromCart(
+    product: Product,
+    quantity: number,
     removeEntirely = false,
   ) {
-    const match = cart.find((item) => item.id === targetProduct.id);
-    if (!match) return;
+    if (user) {
+      if (quantity > 0) {
+        try {
+          await api.post("/cart", { product, quantity });
+          // const response = await fetch(
+          //   `${import.meta.env.VITE_BACKEND_URL}/api/cart`,
+          //   {
+          //     method: "POST",
+          //     credentials: "include",
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //     },
+          //     body: JSON.stringify({ product, quantity }),
+          //   },
+          // );
+        } catch (error) {
+          console.error("Error adding cart item to db:", error);
+        }
+      }
 
-    let updatedCart: CartItem[];
+      if (removeEntirely || quantity === 0) {
+        try {
+          await api.delete("/cart/delete-item", { data: product });
+        } catch (error) {
+          console.error("Failed to delete item from cart:", error);
+        }
+      }
 
-    if (match.quantity > 1 && !removeEntirely) {
-      updatedCart = cart.map((item) =>
-        item.id === targetProduct.id
-          ? { ...item, quantity: item.quantity - 1 }
-          : item,
-      );
-    } else {
-      updatedCart = cart.filter((item) => item.id !== targetProduct.id);
+      await fetchCart();
     }
 
-    // update cart state
-    persistCartState(updatedCart);
+    if (!user) {
+      // if item exists already, decrease quantity
+
+      const existingIndex = cart.findIndex((item) => item.id === product.id);
+
+      let updatedCart: CartProduct[];
+
+      if (quantity > 0) {
+        if (existingIndex > -1) {
+          updatedCart = cart.map((item, idx) =>
+            idx === existingIndex ? { ...item, quantity } : item,
+          );
+        } else {
+          updatedCart = [...cart, { ...product, quantity }];
+        }
+      } else {
+        updatedCart = cart.filter((item) => item.id !== product.id);
+      }
+
+      localStorage.setItem("guest_cart", JSON.stringify(updatedCart));
+      setCart(updatedCart);
+    }
+  }
+
+  // delete the entire cart from an existing user's account
+  async function deleteCart() {
+    try {
+      await api.delete("/cart/delete-cart");
+    } catch (error) {
+      console.error("Error deleting cart:", error);
+    }
+
+    await fetchCart();
   }
 
   return (
@@ -155,6 +209,7 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
         setCart,
         handleAddToCart,
         handleRemoveFromCart,
+        deleteCart,
       }}
     >
       {children}

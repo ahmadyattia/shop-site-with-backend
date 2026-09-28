@@ -1,4 +1,4 @@
-import { DepricatedProductType, Product } from "../types/product.js";
+import { Product } from "../types/product.js";
 
 const products = {
   "-OrZdhIaVVoDeAbTSW68": {
@@ -1026,21 +1026,3 @@ const products = {
     title: "Adidas F50 Soccer Shoes",
   },
 };
-
-const productsArray: DepricatedProductType[] = Object.values(products);
-
-export const productsArrayWithCorrectTypes: DepricatedProductType[] =
-  productsArray.filter((product) => {
-    if (typeof product.price === "string") {
-      product.price = Number.parseInt(product.price);
-    }
-
-    if (
-      product.discountPercentage &&
-      typeof product.discountPercentage === "string"
-    ) {
-      product.discountPercentage = Number.parseInt(product.discountPercentage);
-    }
-
-    return true;
-  });

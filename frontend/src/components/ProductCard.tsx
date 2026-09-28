@@ -1,38 +1,38 @@
 import styles from "../Styles/ProductCard.module.css";
 import { useNavigate } from "react-router-dom";
 import AddToCartBtn from "./Cart/AddToCartBtn";
-import { MappedProduct } from "@/data/mappers/productsMapper";
+import { Product } from "@/types/product";
 import ImageSkeleton from "./ImageSkeleton";
 
 interface ProductCardProps {
-  product: MappedProduct;
+  product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const navigate = useNavigate();
 
   const discountedPrice =
-    product.discountPercentage > 0
+    product.discount_percentage && product.discount_percentage > 0
       ? (
           product.price -
-          product.price * (product.discountPercentage / 100)
+          product.price * (product.discount_percentage / 100)
         ).toFixed(2)
       : null;
 
   function handleCardClick() {
-    navigate(`${product.id}/${product.slug}`);
+    navigate(`${product.slug}?product_id=${product.id}`);
   }
 
   return (
     <article className={`${styles.card} ${styles.font}`}>
       <div className={styles.details} onClick={handleCardClick}>
-        <ImageSkeleton src={product.images[0]} alt={product.title} />
+        <ImageSkeleton src={product.images[0].url} alt={product.title} />
         <h3 className={styles.title}>{product.title}</h3>
         <div className={styles.description}>
           <p className={styles.descriptionText}>{product.description}</p>
           <p className={styles.readMore}>Read More</p>
         </div>
-        <p className={styles.category}>{product.category}</p>
+        <p className={styles.category}>{product.category.name}</p>
       </div>
       <div className={styles.checkout}>
         <div>

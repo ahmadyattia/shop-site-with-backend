@@ -1,33 +1,34 @@
 import styles from "../Styles/Order.module.css";
 import OrderItem from "./OrderItem";
 import orderIcon from "@/assets/images/icons/order-icon.svg";
-import { Order as OrderType } from "@/hooks/useFetchOrders";
+import { Order as OrderType } from "@/types/order";
 
 const Order = ({ order }: { order: OrderType }) => {
-  const orderShippingMethod = order?.shipping?.shippingMethod;
-  const shipping = order?.shipping;
+  if (!order) return;
+
+  // const shippingMethod = order.shipping_method;
 
   return (
     <article className={styles.mainBox}>
       <div className={styles.idSection}>
         <img src={orderIcon} alt="Order" />
-        <div className={styles.orderId}>{order.orderId}</div>
+        <div className={styles.orderId}>{order.id}</div>
       </div>
 
       <div className={styles.orderLogistics}>
-        {orderShippingMethod === "delivery" && shipping && (
+        {order.shipping_method === "delivery" && (
           <div className={styles.shippingInfo}>
-            Delivery to: {shipping.city}, {shipping.state}, {shipping.country}{" "}
-            {shipping.zipCode}
+            Delivery to: {order.city}, {order.state}, {order.country}{" "}
+            {order.zipcode}
           </div>
         )}
-        {orderShippingMethod === "pickup" && (
+        {order.shipping_method === "pickup" && (
           <div className={styles.shippingInfo}>Pickup</div>
         )}
         <div className={styles.date}>Placed on: {order.date}</div>
       </div>
       <div className={styles.orderItems}>
-        {order?.items?.map((item) => {
+        {order.items?.map((item) => {
           return <OrderItem key={item.id} item={item} />;
         })}
       </div>

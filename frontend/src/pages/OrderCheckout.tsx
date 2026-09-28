@@ -1,16 +1,15 @@
 import styles from "@/styles/Cart/OrderCheckout.module.css";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CheckoutSummary from "@/components/Cart/CheckoutSummary";
 import { useAuth } from "@/context/AuthContext";
-import { ulid } from "ulid"; // id generator
 import { useCart } from "@/context/CartContext";
-import { ref, set } from "firebase/database";
-import { db } from "@/server/firebase";
 import { useNavigate } from "react-router-dom";
+import { Order } from "@/types/order";
+import { api } from "@/server/api";
 
 const OrderCheckout = () => {
   const { user } = useAuth();
-  const { cart, setCart } = useCart();
+  const { cart, deleteCart } = useCart();
   const [shippingMethod, setShippingMethod] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -22,7 +21,7 @@ const OrderCheckout = () => {
 
   const navigate = useNavigate();
 
-  const totalRef = useRef("");
+  const totalRef = useRef(0);
 
   if (!user) {
     alert(
@@ -31,67 +30,42 @@ const OrderCheckout = () => {
     return null;
   }
 
-  const userId = user.uid;
-
   const form = useRef<HTMLFormElement>(null);
 
-  function createOrder() {
-    const orderId = `ORD-${ulid()}`;
-    const date = new Date();
-
-    // "pickup" vs "delivery"
-    const shipping =
-      shippingMethod === "pickup"
-        ? {
-            shippingMethod,
-            fullName,
-            email,
-            phone,
-          }
-        : {
-            shippingMethod,
-            fullName,
-            email,
-            phone,
-            country,
-            city,
-            state,
-            zipCode,
-          };
-
-    const order = {
-      orderId,
-      userId,
-      shipping,
-      items: cart,
+  function createOrder(): Order {
+    return {
+      full_name: fullName,
+      email,
+      phone,
+      shipping_method: shippingMethod,
+      city,
+      country,
+      state,
+      zipcode: zipCode,
       total: totalRef.current,
-      date: date.toString(),
+      items: cart,
     };
-
-    return order;
   }
 
   const handlePlaceOrder = async (e: React.SubmitEvent<HTMLFormElement>) => {
     // form validation passed. Place order
-
     e.preventDefault();
+
     const order = createOrder();
 
     try {
-      // reference to the db
-      const orderRef = ref(db, "orders/" + order.orderId);
+      const response = await api.post("/orders", order);
 
-      // set order in db
-      await set(orderRef, order);
+      const orderId = response.data.orderId;
 
       // redirect to the success page
       navigate("/cart/success", {
-        state: order,
+        state: orderId,
         replace: true,
       });
 
       // empty the cart
-      setCart([]);
+      deleteCart();
     } catch (error) {
       alert("Something went wrong. Failed to place your order.");
       console.error(error);
@@ -99,7 +73,7 @@ const OrderCheckout = () => {
   };
 
   // recieve total from CheckoutSummary.jsx
-  function recieveTotal(total: string) {
+  function recieveTotal(total: number) {
     totalRef.current = total;
   }
 
@@ -112,9 +86,9 @@ const OrderCheckout = () => {
 
   // default email and full name
   useEffect(() => {
-    if (user && user.email && user.displayName) {
+    if (user && user.email && user.first_name && user.last_name) {
       setEmail(user.email);
-      setFullName(user.displayName);
+      setFullName(`${user.first_name} ${user.last_name}`);
     }
   }, [user]);
 

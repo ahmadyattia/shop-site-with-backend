@@ -6,10 +6,10 @@ import slugify from "@/utils/slugify";
 import minusIcon from "@/assets/images/icons/minus_icon_16px_white.svg";
 import plusIcon from "@/assets/images/icons/plus_icon_16px_white.svg";
 import deleteIcon from "@/assets/images/icons/delete_icon_16px_red.svg";
-import { CartItem } from "@/context/CartContext";
+import { CartProduct } from "@/types/product";
 
 interface CartItemProps {
-  item: CartItem;
+  item: CartProduct;
 }
 
 const CartItemDisplay = ({ item }: CartItemProps) => {
@@ -18,43 +18,42 @@ const CartItemDisplay = ({ item }: CartItemProps) => {
   const { handleAddToCart, handleRemoveFromCart } = useCart();
 
   function handleIncreaseQuantity() {
-    handleAddToCart(item);
+    handleAddToCart(item, item.quantity + 1);
   }
 
   function handleReduceQuantity() {
     if (item.quantity === 1) {
       setAnimateRemove(`${styles.animateRemoveItem}`);
       setTimeout(() => {
-        handleRemoveFromCart(item);
+        handleRemoveFromCart(item, item.quantity - 1);
       }, 1000);
     } else {
-      handleRemoveFromCart(item);
+      handleRemoveFromCart(item, item.quantity - 1);
     }
   }
 
   function handleDeleteItem() {
     setAnimateRemove(`${styles.animateRemoveItem}`);
     setTimeout(() => {
-      handleRemoveFromCart(item, true);
+      handleRemoveFromCart(item, 0, true);
     }, 1000);
   }
 
-  const itemLocation = `/shop/${slugify(item.category)}/${item.id}/${slugify(item.title)}`;
+  const itemLocation = `/shop/${slugify(item.category.name)}/${item.id}/${slugify(item.title)}`;
 
-  const discount = item.discountPercentage;
-
+  const discount = item.discount_percentage;
   const discountedPrice = discount
-    ? (item.price - item.price * (discount / 100)).toFixed(2)
-    : "";
+    ? Number.parseFloat((item.price - item.price * (discount / 100)).toFixed(2))
+    : 0;
 
   return (
     <article className={styles.cartItemBox}>
       <div className={`${styles.cartItem} ${animateRemove}`}>
         <div className={styles.imageAndTitle}>
-          <img className={styles.productImg} src={item.img} alt="" />
+          <img className={styles.productImg} src={item.images[0].url} alt="" />
           <div>
             <p className={styles.title}>{item.title}</p>
-            <p className={styles.discount}>{item.discountPercentage}% Off</p>
+            {discount && <p className={styles.discount}>{discount}% Off</p>}
           </div>
         </div>
         <div className={styles.quantityDiv}>

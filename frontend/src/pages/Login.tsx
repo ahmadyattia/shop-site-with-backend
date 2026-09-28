@@ -1,14 +1,11 @@
 import styles from "@/styles/Login.module.css";
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { FirebaseError } from "firebase/app";
-import { auth } from "@/server/firebase";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import ShowPassword from "@/components/ShowPassword";
 
 const Login = () => {
-  const { setUser } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,52 +25,17 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
+      await login(email, password);
 
-      setUser(userCredential.user);
-
-      setMessage(`Successfully signed in as: ${userCredential.user.email}`);
+      setMessage(`Successfully signed in as: ${email}`);
       setEmail("");
       setPassword("");
-      console.log("Signed in user:", userCredential.user);
 
-      // if coming from, for example, the order checkout, redirect there
+      // if redirected from a certain location, redirect there
       const redirectPath = location.state?.from?.pathname || "/home";
-
       navigate(redirectPath, { replace: true });
-    } catch (error) {
-      if (error instanceof FirebaseError) {
-        console.error("Sign-in error:", error.code, error.message);
-        switch (error.code) {
-          case "auth/user-not-found":
-            setMessage(
-              "No account found with this email. Please check your email or sign up.",
-            );
-            break;
-          case "auth/wrong-password":
-            setMessage("Incorrect password. Please try again.");
-            break;
-          case "auth/invalid-email":
-            setMessage("The email address is not valid.");
-            break;
-          case "auth/invalid-credential": // Generic error for bad credentials
-            setMessage(
-              "Invalid credentials. Please check your email and password.",
-            );
-            break;
-          case "auth/too-many-requests":
-            setMessage(
-              "Access to this account has been temporarily blocked due to many failed login attempts. Try again later.",
-            );
-            break;
-          default:
-            setMessage(`An unexpected error occurred: ${error.message}`);
-        }
-      }
+    } catch (error: any) {
+      setMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }

@@ -1,13 +1,11 @@
-import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import styles from "@/Styles/Navbar/Navbar.module.css";
 import NavbarCart from "@/components/Cart/NavbarCart";
-import NavbarSettings from "./Settings/NavbarSettings";
+import NavbarSettings from "./NavbarSettings";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import NavbarBtn from "./NavbarBtn";
 import { useAuth } from "@/context/AuthContext";
-import { useLogout } from "@/hooks/useLogout";
-import useDeleteAcc from "@/hooks/useDeleteAcc";
 
 // icons
 import closeMenuIcon from "@/assets/images/icons/close-icon-white.svg";
@@ -30,9 +28,7 @@ const Navbar = () => {
   const isMobile = useMediaQuery("(max-width: 850px)");
   const isDesktop = !isMobile;
   const [isActive, setIsActive] = useState(false);
-  const { user } = useAuth();
-  const handleLogout = useLogout();
-  const handleDeleteAccount = useDeleteAcc();
+  const { user, logout, deleteAccount } = useAuth();
 
   function handleMenuClick() {
     if (isActive) {
@@ -111,10 +107,7 @@ const Navbar = () => {
                 </Link>
               )}
               {user && (
-                <div
-                  className={styles.mainNavLnkBoxMobile}
-                  onClick={handleLogout}
-                >
+                <div className={styles.mainNavLnkBoxMobile} onClick={logout}>
                   <div className={styles.iconAndNameMenu}>
                     <img src={logoutIconWhite} />
                     <p>Logout</p>
@@ -125,7 +118,7 @@ const Navbar = () => {
               {user && (
                 <div
                   className={styles.mainNavLnkBoxMobile}
-                  onClick={handleDeleteAccount}
+                  onClick={deleteAccount}
                 >
                   <div className={styles.iconAndNameMenu}>
                     <img src={deleteAccIconWhite} />
