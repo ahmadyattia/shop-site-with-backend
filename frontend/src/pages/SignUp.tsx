@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "@/Styles/SignUp.module.css";
+import styles from "@/styles/SignUp.module.css";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import ShowPassword from "@/components/ShowPassword";
 import { useAuth } from "@/context/AuthContext";
