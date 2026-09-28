@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import shopRouter from "./routes/shop.js";
 import productsRouter from "./routes/products.js";
 import categoriesRouter from "./routes/categories.js";
 import signupRouter from "./routes/auth/signup.js";
@@ -31,7 +30,6 @@ app.get("/health", (req: Request, res: Response) => {
 
 app.get("/run-script", () => {});
 
-app.use("/api/shop", shopRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/auth/signup", signupRouter);
