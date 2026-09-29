@@ -12,7 +12,8 @@
 }
 
 .adjustHeight {
-  height: 40rem;
+  min-height: 30rem;
+  height: 100vh;
 }
 
 #cartHead {
