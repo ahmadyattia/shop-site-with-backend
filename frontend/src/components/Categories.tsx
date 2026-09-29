@@ -3,11 +3,12 @@ import styles from "@/styles/Categories.module.css";
 import CategoryCard from "./CategoryCard";
 import { Category } from "@/types/category";
 import { api } from "@/server/api";
+import CategoryCardSkeleton from "./CategoryCardSkeleton";
 
 const Categories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -30,10 +31,6 @@ const Categories = () => {
     fetchCategories();
   }, []);
 
-  if (loading) {
-    return <p style={{ color: "white" }}>Loading categories...</p>;
-  }
-
   if (error) {
     return <p style={{ color: "white" }}>{error}</p>;
   }
@@ -41,15 +38,17 @@ const Categories = () => {
   return (
     <div>
       <div id={styles["shop-categories"]}>
-        {categories.map((category) => {
-          return (
-            <CategoryCard
-              key={category.slug}
-              slug={category.slug}
-              name={category.name}
-            ></CategoryCard>
-          );
-        })}
+        {loading && <CategoryCardSkeleton />}
+        {categories &&
+          categories.map((category) => {
+            return (
+              <CategoryCard
+                key={category.slug}
+                slug={category.slug}
+                name={category.name}
+              ></CategoryCard>
+            );
+          })}
       </div>
     </div>
   );
