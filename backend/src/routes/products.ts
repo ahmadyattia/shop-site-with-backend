@@ -2,7 +2,7 @@ import express from "express";
 import { Request, Response } from "express";
 import insertProduct from "../services/insertProduct.js";
 import pool from "../lib/db.js";
-import { Product } from "../types/product.js";
+import { Product, ProductWithSales } from "../types/product.js";
 
 const router = express.Router();
 
@@ -37,10 +37,66 @@ router.get("/", async (req: Request, res: Response) => {
 
     const products: Product[] = queryResult.rows;
 
-    res.status(200).json({ success: true, products: products });
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully!",
+      products: products,
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ success: false, error: error });
+  } finally {
+    client.release();
+  }
+});
+
+// fetch the 3 top purchased products from the orders data
+router.get("/top-purchased", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    const queryResult = await client.query(
+      `
+      select 
+		  p.id, 
+	    p.title, 
+	    p.price, 
+	    p.discount_percentage, 
+	    p.description, 
+	    p.slug, 
+	    p.creation_at, 
+      p.updated_at,
+      COALESCE(
+    	  json_agg(json_build_object('url', pi.image))
+    	  FILTER (WHERE pi.image_id IS NOT NULL), '[]'::json) AS images, 
+      json_build_object('id', c.id, 'name', c.name, 'slug', c.slug, 'image', c.image) as category,
+      sales.total_purchased
+    from products p
+    left join (
+	    select product_id, sum(quantity) as total_purchased
+	    from order_items
+	    group by product_id
+    ) sales on p.id = sales.product_id 
+    left join categories c on p.category_id = c.id
+    left join product_images pi on p.id = pi.product_id 
+    group by p.id, sales.total_purchased, c.id
+    order by sales.total_purchased desc nulls last
+    limit 3
+    `,
+    );
+
+    const topThreeProducts: ProductWithSales[] = queryResult.rows;
+
+    res.status(200).json({
+      success: true,
+      message: "Fetched the top products successfully!",
+      products: topThreeProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching top products:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Error fetching top products" });
   } finally {
     client.release();
   }
@@ -83,7 +139,11 @@ router.get("/:category", async (req: Request, res: Response) => {
 
     const products: Product[] = queryResult.rows;
 
-    res.status(200).json({ success: true, products: products });
+    res.status(200).json({
+      success: true,
+      message: "Products according to category fetched successfully!",
+      products: products,
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ success: false, error: error });
