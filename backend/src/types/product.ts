@@ -17,3 +17,7 @@ export interface Product {
 export interface CartProduct extends Product {
   quantity: number;
 }
+
+export interface ProductWithSales extends Product {
+  total_purchased: number;
+}
