@@ -1,0 +1,21 @@
+#main {
+  padding: 4rem 0;
+  margin-bottom: 10rem;
+}
+
+#title {
+  width: fit-content;
+  text-align: center;
+  font-family: var(--primary-font);
+  font-size: 1.5rem;
+  color: white;
+  padding: 1rem;
+  margin: 0 auto 2rem auto;
+}
+
+#products {
+  display: grid;
+  grid-template-columns: 25vw 25vw 25vw;
+  gap: 1rem;
+  justify-content: center;
+}
