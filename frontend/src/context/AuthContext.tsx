@@ -75,7 +75,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(null);
 
-      navigate("/login", { replace: true });
+      // navigate("/login", { replace: true });
       console.log("User signed out successfully!");
     } catch (error) {
       console.error("Error signing out: ", error);
