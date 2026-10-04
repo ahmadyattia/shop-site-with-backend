@@ -271,4 +271,70 @@ router.get("/images", async (req: Request, res: Response) => {
   }
 });
 
+// update an existing product with the product id
+router.put("/:productId", async (req: Request, res: Response) => {
+  const { productId } = req.params;
+  const product: Product = req.body;
+
+  if (!productId)
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing product id param." });
+  if (!product)
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing product data." });
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const categoryIdQueryResult = await client.query(
+      "SELECT id FROM categories WHERE name = $1",
+      [product.category.name],
+    );
+
+    const categoryId = categoryIdQueryResult.rows[0].id;
+
+    await client.query(
+      `
+      UPDATE products
+      SET 
+        title = $1,
+        category_id = $2,
+        price = $3,
+        discount_percentage = $4,
+        description = $5,
+        slug = $6
+      WHERE 
+        id = $7
+    `,
+      [
+        product.title,
+        categoryId,
+        product.price,
+        product.discountPercentage,
+        product.description,
+        product.slug,
+        product.id,
+      ],
+    );
+
+    await client.query("COMMIT");
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Product data updated successfully." });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Failed to update product data:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to update product data" });
+  } finally {
+    client.release();
+  }
+});
+
 export default router;
