@@ -27,7 +27,7 @@ export default async function insertProduct(product: Product) {
     const categoryId = categoryIdQueryResult.rows[0].id;
 
     const productQueryText =
-      "INSERT INTO products (title, price, category, discount_percentage, description, slug, creation_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;";
+      "INSERT INTO products (title, price, category_id, discount_percentage, description, slug) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;";
     const queryValues = [
       product.title,
       product.price,
@@ -35,14 +35,12 @@ export default async function insertProduct(product: Product) {
       product.discountPercentage,
       product.description,
       product.slug,
-      product.creationAt,
-      product.updatedAt,
     ];
 
     const productResult = await client.query(productQueryText, queryValues);
     const newProductId = productResult.rows[0].id;
 
-    const imageRows = product.images.map((image) => [newProductId, image]);
+    const imageRows = product.images.map((image) => [newProductId, image.url]);
 
     const imagesQuery = format(
       "INSERT INTO product_images (product_id, image) VALUES %L;",
