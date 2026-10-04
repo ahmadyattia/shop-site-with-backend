@@ -337,4 +337,25 @@ router.put("/:productId", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/delete/:productId", async (req: Request, res: Response) => {
+  const { productId } = req.params;
+
+  const client = await pool.connect();
+
+  try {
+    await client.query(`DELETE FROM products WHERE id = $1`, [productId]);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Product deleted successfully!" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete product." });
+    console.error(error);
+  } finally {
+    client.release();
+  }
+});
+
 export default router;
