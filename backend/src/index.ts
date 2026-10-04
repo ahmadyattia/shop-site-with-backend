@@ -13,8 +13,13 @@ import cookieParser from "cookie-parser";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+const allowedOrigins: string[] = [
+  process.env.FRONTEND_URL,
+  process.env.DASHBOARD_URL,
+].filter((url): url is string => !!url); // Type guard removes 'undefined'
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
+  origin: allowedOrigins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
