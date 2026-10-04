@@ -32,7 +32,8 @@ router.get("/", async (req: Request, res: Response) => {
         FROM products p
         LEFT JOIN product_images pi ON p.id = pi.product_id
         LEFT JOIN categories c ON p.category_id = c.id 
-        GROUP BY p.id, c.id;
+        GROUP BY p.id, c.id
+        ORDER BY p.creation_at DESC
         `);
 
     const products: Product[] = queryResult.rows;
