@@ -290,4 +290,31 @@ router.get("/all", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/revenue", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    // orders revenue
+    const queryResult = await client.query(
+      `SELECT SUM(total) AS revenue FROM orders`,
+    );
+
+    const revenue: number = queryResult.rows[0].revenue;
+
+    res.status(200).json({
+      success: true,
+      message: "Revenue returned successfully.",
+      revenue,
+    });
+  } catch (error) {
+    console.error("Error returning revenue:", error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to fetch revenue from the database.",
+    });
+  } finally {
+    client.release();
+  }
+});
+
 export default router;
