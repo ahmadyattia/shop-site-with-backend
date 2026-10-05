@@ -4,6 +4,34 @@ import pool from "../lib/db.js";
 
 const router = express.Router();
 
+// users count for statistical purposes
+router.get("/count", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    // users count
+    const queryResult = await client.query(
+      `SELECT COUNT(id) AS count FROM users`,
+    );
+
+    const count: number = queryResult.rows[0].count;
+
+    res.status(200).json({
+      success: true,
+      message: "Users count returned successfully.",
+      count,
+    });
+  } catch (error) {
+    console.error("Error returning users count:", error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to fetch users count from the database.",
+    });
+  } finally {
+    client.release();
+  }
+});
+
 router.get("/all", async (req: Request, res: Response) => {
   if (!req.query.page || !req.query.size)
     return res
