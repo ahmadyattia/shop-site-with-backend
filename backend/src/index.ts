@@ -7,6 +7,7 @@ import meRouter from "./routes/auth/me.js";
 import cartRouter from "./routes/cart.js";
 import ordersRouter from "./routes/orders.js";
 import deleteAccRouter from "./routes/auth/delete-account.js";
+import usersRouter from "./routes/users.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -43,6 +44,7 @@ app.use("/api/auth/me", meRouter);
 app.use("/api/auth/delete-account", deleteAccRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/users", usersRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running happily on port ${PORT}!`);
