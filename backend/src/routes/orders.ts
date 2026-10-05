@@ -317,4 +317,32 @@ router.get("/revenue", async (req: Request, res: Response) => {
   }
 });
 
+// orders count for statistical purposes
+router.get("/count", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    // orders count
+    const queryResult = await client.query(
+      `SELECT COUNT(id) AS count FROM orders`,
+    );
+
+    const count: number = queryResult.rows[0].count;
+
+    res.status(200).json({
+      success: true,
+      message: "Orders count returned successfully.",
+      count,
+    });
+  } catch (error) {
+    console.error("Error returning orders count:", error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to fetch orders count from the database.",
+    });
+  } finally {
+    client.release();
+  }
+});
+
 export default router;
