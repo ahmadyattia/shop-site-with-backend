@@ -1,6 +1,43 @@
 import express from "express";
 import { Request, Response } from "express";
+import pool from "../lib/db.js";
 
 const router = express.Router();
+
+router.get("/all", async (req: Request, res: Response) => {
+  if (!req.query.page || !req.query.size)
+    return res
+      .status(400)
+      .json({ success: false, error: "Missing query params." });
+
+  const pageNumber = parseInt(req.query.page as string);
+  const pageSize = parseInt(req.query.size as string);
+  const offset = (pageNumber - 1) * pageSize;
+
+  const client = await pool.connect();
+
+  try {
+    const queryResult = await client.query(
+      "SELECT * FROM users LIMIT $1 OFFSET $2",
+      [pageSize, offset],
+    );
+
+    const users = queryResult.rows;
+
+    res.status(200).json({
+      success: true,
+      message: "Users fetched successfully.",
+      users: users,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to fetch users from the database.",
+    });
+  } finally {
+    client.release();
+  }
+});
 
 export default router;
