@@ -103,56 +103,6 @@ router.get("/top-purchased", async (req: Request, res: Response) => {
   }
 });
 
-// fetch products by category
-router.get("/:category", async (req: Request, res: Response) => {
-  const client = await pool.connect();
-  const { category } = req.params;
-
-  try {
-    // using postgreSQL functions
-    // to aggregate images into a single array of objects
-    // also with categories to save them as a json object
-    const queryResult = await client.query(
-      `
-        SELECT p.id, 
-	    p.title, 
-	    p.price, 
-	    p.discount_percentage, 
-	    p.description, 
-	    p.slug, 
-	    p.creation_at, 
-	    p.updated_at, 
-	    json_build_object('id', c.id, 'name', c.name, 'slug', c.slug, 'image', c.image) AS category, 
-        COALESCE(
-            json_agg(
-            json_build_object('url', pi.image)
-            ) FILTER (WHERE pi.image_id IS NOT NULL), 
-            '[]'::json
-        ) AS images
-        FROM products p
-        LEFT JOIN product_images pi ON p.id = pi.product_id
-        LEFT JOIN categories c ON p.category_id = c.id 
-        WHERE c.slug = $1
-        GROUP BY p.id, c.id;
-        `,
-      [category],
-    );
-
-    const products: Product[] = queryResult.rows;
-
-    res.status(200).json({
-      success: true,
-      message: "Products according to category fetched successfully!",
-      products: products,
-    });
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    res.status(500).json({ success: false, error: error });
-  } finally {
-    client.release();
-  }
-});
-
 // fetch a product by id
 router.get("/:category/:productId", async (req: Request, res: Response) => {
   const client = await pool.connect();
@@ -354,6 +304,84 @@ router.delete("/delete/:productId", async (req: Request, res: Response) => {
       .status(500)
       .json({ success: false, message: "Failed to delete product." });
     console.error(error);
+  } finally {
+    client.release();
+  }
+});
+
+// products count for statistical purposes
+router.get("/count", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    // products count
+    const queryResult = await client.query(
+      `SELECT COUNT(id) AS count FROM products`,
+    );
+
+    const count: number = queryResult.rows[0].count;
+
+    res.status(200).json({
+      success: true,
+      message: "Products count returned successfully.",
+      count,
+    });
+  } catch (error) {
+    console.error("Error returning products count:", error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to fetch products count from the database.",
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// fetch products by category
+router.get("/:category", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  const { category } = req.params;
+
+  try {
+    // using postgreSQL functions
+    // to aggregate images into a single array of objects
+    // also with categories to save them as a json object
+    const queryResult = await client.query(
+      `
+        SELECT p.id, 
+	    p.title, 
+	    p.price, 
+	    p.discount_percentage, 
+	    p.description, 
+	    p.slug, 
+	    p.creation_at, 
+	    p.updated_at, 
+	    json_build_object('id', c.id, 'name', c.name, 'slug', c.slug, 'image', c.image) AS category, 
+        COALESCE(
+            json_agg(
+            json_build_object('url', pi.image)
+            ) FILTER (WHERE pi.image_id IS NOT NULL), 
+            '[]'::json
+        ) AS images
+        FROM products p
+        LEFT JOIN product_images pi ON p.id = pi.product_id
+        LEFT JOIN categories c ON p.category_id = c.id 
+        WHERE c.slug = $1
+        GROUP BY p.id, c.id;
+        `,
+      [category],
+    );
+
+    const products: Product[] = queryResult.rows;
+
+    res.status(200).json({
+      success: true,
+      message: "Products according to category fetched successfully!",
+      products: products,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, error: error });
   } finally {
     client.release();
   }
