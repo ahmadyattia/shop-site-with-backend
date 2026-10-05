@@ -6,14 +6,24 @@ import { Product, ProductWithSales } from "../types/product.js";
 
 const router = express.Router();
 
+// fetch orders according to a limit and offset that are either present or not
 router.get("/", async (req: Request, res: Response) => {
+  let pageNumber = req.query.page !== undefined ? req.query.page : null;
+  let pageSize = req.query.size !== undefined ? req.query.size : null;
+
+  let offset =
+    pageNumber && pageSize
+      ? (parseInt(pageNumber as string) - 1) * parseInt(pageSize as string)
+      : null;
+
   const client = await pool.connect();
 
   try {
     // using postgreSQL functions
     // to aggregate images into a single array of objects
     // also with categories to save them as a json object
-    const queryResult = await client.query(`
+    const queryResult = await client.query(
+      `
         SELECT p.id, 
 	    p.title, 
 	    p.price, 
@@ -34,7 +44,10 @@ router.get("/", async (req: Request, res: Response) => {
         LEFT JOIN categories c ON p.category_id = c.id 
         GROUP BY p.id, c.id
         ORDER BY p.updated_at DESC
-        `);
+        LIMIT $1 OFFSET $2
+        `,
+      [pageSize, offset],
+    );
 
     const products: Product[] = queryResult.rows;
 
