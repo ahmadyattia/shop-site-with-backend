@@ -345,4 +345,47 @@ router.get("/count", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/revenue/monthly", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
+  try {
+    const queryResult = await client.query(
+      `
+        WITH month_series AS (
+  	      -- 1. Dynamically generate a series starting 5 months ago up until the current month
+	        SELECT 
+            generate_series(
+		          date_trunc('month', now() - interval '5 months'),
+		          date_trunc('month', now()),
+		          '1 month'::interval
+	          )::date AS month_date
+        )
+        SELECT 
+          -- 2. Format the generated month dates (e.g., "May", "Jun", "Jul")
+	        to_char(ms.month_date, 'Mon') as month, coalesce(sum(o.total), 0) as revenue
+        FROM month_series ms
+        LEFT JOIN orders o ON date_trunc('month', o.created_at) = ms.month_date
+        GROUP BY ms.month_date
+        ORDER BY ms.month_date asc`,
+      [],
+    );
+
+    const data = queryResult.rows;
+
+    res.status(200).json({
+      success: true,
+      message: "Monthly revenue fetched successfully.",
+      monthlyRevenue: data,
+    });
+  } catch (error) {
+    console.error("Error returning monthly revenue:", error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to fetch monthly revenue.",
+    });
+  } finally {
+    client.release();
+  }
+});
+
 export default router;
